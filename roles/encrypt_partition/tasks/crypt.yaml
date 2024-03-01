@@ -1,0 +1,21 @@
+---
+- name: Encrypt partition
+  become: yes
+  ansible.builtin.script: "encrypt_partition.sh '{{ item.value.luks_passphrase }}' '{{ item.key }}' '{{ item.value.luks_partition }}'"
+  register: encryption_result
+  ignore_errors: yes
+
+- name: Format
+  become: yes
+  ansible.builtin.command: mkfs.ext4 /dev/mapper/{{ item.value.luks_partition }}
+  when: encryption_result is succeeded
+
+- name: Create mount folder
+  become: yes
+  ansible.builtin.command: mkdir -p {{ item.value.mount_point }}
+  when: encryption_result is succeeded
+
+- name: Mount partition to mount point
+  become: yes
+  ansible.builtin.command: mount /dev/mapper/{{ item.value.luks_partition }} {{ item.value.mount_point }}
+  when: encryption_result is succeeded

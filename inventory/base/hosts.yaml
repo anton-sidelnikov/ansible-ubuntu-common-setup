@@ -1,0 +1,15 @@
+all:
+  hosts:
+    main:
+      ansible_host: 192.168.0.100 # insert here proper address
+      ansible_user: ubuntu
+      ansible_ssh_private_key_file: ~/.ssh/key.pem # use here proper key file
+      partitions_to_encrypt:
+        "/dev/xvda14":
+          luks_passphrase: "YourPassphraseHereXvda14"
+          luks_partition: "xvda14"
+          mount_point: "/home/xvda14"
+        "/dev/xvdf":
+          luks_passphrase: "YourPassphraseHereXvdf"
+          luks_partition: "xvdf"
+          mount_point: "/home/xvdf"

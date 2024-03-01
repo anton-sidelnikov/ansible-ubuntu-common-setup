@@ -1,0 +1,51 @@
+---
+- name: Check if {{ cloud_init_file }} exists
+  ansible.builtin.stat:
+    path: "{{ netplan_path }}/{{ cloud_init_file }}"
+  register: cloud_init_stat
+  ignore_errors: true
+
+- name: Check if {{ net_cfg_file }} does not exist
+  ansible.builtin.stat:
+    path: "{{ netplan_path }}/{{ net_cfg_file }}"
+  register: netcfg_file_stat
+  ignore_errors: true
+
+- name: Rename active network interface to {{ interface_name }}
+  become: yes
+  ansible.builtin.command: mv "{{ netplan_path }}/{{ cloud_init_file }}" "{{ netplan_path }}/{{ net_cfg_file }}"
+  when: cloud_init_stat.stat.exists and not netcfg_file_stat.stat.exists
+  register: rename_task_result
+
+- name: Change interface name in "{{ netplan_path }}/{{ net_cfg_file }}" to {{ interface_name }}
+  become: yes
+  ansible.builtin.replace:
+    path: "{{ netplan_path }}/{{ net_cfg_file }}"
+    regexp: 'set-name: .*'
+    replace: 'set-name: {{ interface_name }}'
+  when: rename_task_result is defined and rename_task_result.changed
+
+- name: Check netplan configuration for errors
+  become: yes
+  ansible.builtin.command: netplan try
+  register: netplan_result
+  ignore_errors: true
+  when: rename_task_result is defined and rename_task_result.changed
+
+- name: Handle errors in netplan configuration
+  ansible.builtin.fail:
+    msg: "Netplan configuration contains errors. Please check and fix the configuration."
+  when: rename_task_result is defined and rename_task_result.changed and netplan_result.rc != 0
+
+- name: Apply new network configuration
+  become: yes
+  ansible.builtin.command: netplan apply
+  when: rename_task_result is defined and rename_task_result.changed
+
+- name: Display information about the renamed interface
+  become: yes
+  ansible.builtin.command: ip addr show {{ interface_name }}
+  register: renamed_interface_info
+
+- ansible.builtin.debug:
+    msg: "{{ renamed_interface_info.stdout_lines | join('\n') }}"

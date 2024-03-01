@@ -1,0 +1,11 @@
+- hosts: all
+  name: "Base: set up common environment on host"
+  become: yes
+  vars:
+    partitions: "{{ hostvars[inventory_hostname].partitions_to_encrypt }}"
+  tasks:
+    - include_role: name=rename_interface
+    - include_role: name=disable_cstate
+    - include_role: name=encrypt_partition
+  roles:
+    - { role: cpu_operation_mode, governor: 'performance' }

@@ -1,0 +1,31 @@
+---
+- name: Install cpupower within linux-tools
+  become: yes
+  ansible.builtin.package:
+    name:
+      - linux-tools-5.15.0-1048-aws
+      - linux-tools-common
+      - linux-tools-generic
+      - linux-tools-5.15.0-94-generic
+    update_cache: yes
+    ignore_errors: yes
+
+- name: Check current CPU idle state
+  ansible.builtin.command: cpupower idle-info
+  register: cpu_idle_state_info
+  changed_when: false
+
+- name: Determine if there are idle states
+  set_fact:
+    cpu_idle_state_change_required: "{{ cpu_idle_state_info | regex_search('No idle states') | ternary(false, true) }}"
+  when: cpu_idle_state_info is succeeded
+
+- name: Set CPU idle state to {{ cpu_idle_state }}
+  become: yes
+  ansible.builtin.command: cpupower idle-set -d {{ cpu_idle_state }}
+  when: cpu_idle_state_change_required | default(true)
+
+- name: Check current CPU idle state (after change)
+  ansible.builtin.command: cpupower idle-info
+  register: cpu_idle_state_after
+  changed_when: false

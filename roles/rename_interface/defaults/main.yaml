@@ -1,0 +1,4 @@
+interface_name: net0
+netplan_path: /etc/netplan
+cloud_init_file: 50-cloud-init.yaml
+net_cfg_file: 01-netcfg.yaml

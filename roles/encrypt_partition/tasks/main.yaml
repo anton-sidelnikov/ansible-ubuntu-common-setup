@@ -1,0 +1,13 @@
+---
+- name: Install cryptsetup package
+  become: yes
+  ansible.builtin.package:
+    name: cryptsetup
+    state: present
+  register: cryptsetup_packages
+  until: cryptsetup_packages is succeeded
+
+- name: Encrypt and mount partitions
+  ansible.builtin.include_tasks: crypt.yaml
+  loop: "{{ partitions | dict2items }}"
+  when: partitions is defined

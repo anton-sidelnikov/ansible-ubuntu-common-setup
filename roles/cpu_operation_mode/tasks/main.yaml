@@ -1,0 +1,26 @@
+---
+- name: Install cpufrequtils package and update apt package cache
+  become: yes
+  ansible.builtin.package:
+    name:
+      - cpufrequtils
+      - util-linux
+    update_cache: yes
+
+- name: Check available CPU governors
+  become: yes
+  ansible.builtin.command: cpufreq-info --governors
+  register: cpu_governors_result
+  changed_when: false
+  ignore_errors: true
+
+- name: Set CPU scaling governor to {{ governor }} if supported
+  become: yes
+  ansible.builtin.command: cpufreq-set -r -g {{ governor }}
+  when: cpu_governors_result is not failed and cpu_governors_result.stdout | default('') != ''
+
+- name: Display CPU information including Hyper-Threading/Multithreading
+  become: yes
+  ansible.builtin.command: lscpu
+  register: cpu_info
+  changed_when: false

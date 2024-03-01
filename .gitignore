@@ -1,0 +1,11 @@
+.DS_Store
+*.swp
+*~
+*.pyc
+*.egg
+*.eggs
+*.retry
+.vscode/
+.idea/
+venv/
+ansible-test-project.iml
