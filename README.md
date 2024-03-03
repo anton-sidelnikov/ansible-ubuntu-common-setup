@@ -7,21 +7,29 @@ This playbook is designed to be executed on all hosts (`all`) and aims to set up
 1. Rename Interface: This task is included as a role named `rename_interface`. It is responsible for renaming active network interface on the host.
 2. Disable C-state: This task is included as a role named `disable_cstate`. It disables CPU C-states to improve performance and reduce latency.
 3. Encrypt Partition: This task is included as a role named `encrypt_partition`. It encrypts specified partitions using LUKS (Linux Unified Key Setup) and mounts them.
-4. Set CPU Operation Mode: This role (`cpu_operation_mode`) sets the CPU governor to `performance` mode to ensure consistent high performance at the end prints CPU specification
+4. Set CPU Operation Mode: This role (`cpu_operation_mode`) sets the CPU governor to `performance` mode to ensure consistent high performance and at the end prints CPU specification
    include information about `Intel Hyper-Threading (AMD multithreading)`.
 
 ## Playbook Variables
-`partitions`: A list of partitions to be encrypted and mounted on the host. This variable is sourced from `partitions_to_encrypt` defined in the inventory for each host.
-`governor`: (Optional) The CPU governor mode to be set. If not specified, the default mode is `performance`.
+
+- `partitions`: (Optional, Dict) A list of partitions to be encrypted and mounted on the host. This variable is sourced from `partitions_to_encrypt` defined in the inventory for each host.
+  Each key-value pair in the dictionary represents a partition:
+  * where the `key` is the partition name, like (`/dev/xvda14`) and the value is another dictionary containing the following keys:
+    * `luks_passphrase`: This field stores the passphrase used for unlocking the LUKS (Linux Unified Key Setup) encryption on the partition. This passphrase is necessary to decrypt the data on the partition.
+    * `luks_partition`: This field identifies the name of the LUKS partition. It's typically the same as the device name without the /dev/ prefix.
+    * `mount_point`: This specifies where the partition will be mounted in the filesystem hierarchy.
+- `governor`: (Optional, String) The CPU governor mode to be set. If not specified, the default mode is `performance`.
+- `interface_name`: (Optional, String) The Active network interface name to be set. If not specified, the default name is `net0`.
+- `cpu_idle_state`: (Optional, Int) The CPU idle state to be set. If not specified, the default value is `1`.
 
 ## Example Usage
-To execute the playbook base.yaml with the specified inventory file base using Ansible, you would run the following command in your terminal:
+To execute the playbook base.yaml with the specified inventory file using Ansible, you would run the following command in your terminal:
 
 ```bash
 ansible-playbook playbooks/base.yaml -i inventory/base
 ```
 
-This command tells Ansible to run the playbook base.yaml and use the inventory file base for defining the hosts on which the playbook tasks should be executed. Adjust the paths and filenames as needed to match the actual locations of your playbook and inventory files.
+This command tells Ansible to run the playbook base.yaml and use the inventory base for defining the hosts on which the playbook tasks should be executed. Adjust the paths and filenames as needed to match the actual locations of your playbook and inventory files.
 
 ```yaml
 - hosts: all
@@ -36,13 +44,13 @@ This command tells Ansible to run the playbook base.yaml and use the inventory f
   roles:
     - { role: cpu_operation_mode, governor: 'performance' }
 ```
-This playbook will execute the tasks and roles mentioned above on all hosts listed in the inventory.
+This playbook will execute the tasks and roles mentioned above on `all` hosts listed in the inventory.
 
 ## Hosts file
-Each host listed under all now includes a `partitions_to_encrypt` key with a list of partitions to be encrypted.
+Each host listed under `all` now includes a `partitions_to_encrypt` key with a list of partitions to be encrypted.
 Adjust the partitions accordingly for each host.
 If a host does not require any partitions to be encrypted,
-set an empty dictionary {} for partitions_to_encrypt.
+set an empty dictionary `{}` for `partitions_to_encrypt`.
 
 Make sure the hostnames and partition paths match the actual configuration of your infrastructure.
 Save the changes to the `hosts.yaml` file and ensure it is correctly referenced in your Ansible command.

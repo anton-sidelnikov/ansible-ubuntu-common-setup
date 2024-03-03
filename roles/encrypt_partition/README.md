@@ -9,14 +9,14 @@ This Ansible role automates the process of encrypting and mounting partitions us
 
 - `partitions`: A dictionary specifying the partitions to be encrypted and mounted. Each key-value pair in the dictionary represents a partition.
   where the `key` is the partition name and the value is another dictionary containing the following keys:
-  * `luks_passphrase`: The passphrase used for encryption.
-  * `luks_partition`: The path to the partition to be encrypted.
-  * `mount_point`: The folder where the encrypted partition will be mounted.
+  * `luks_passphrase`: This field stores the passphrase used for unlocking the LUKS (Linux Unified Key Setup) encryption on the partition. This passphrase is necessary to decrypt the data on the partition.
+  * `luks_partition`: This field identifies the name of the LUKS partition
+  * `mount_point`: This specifies where the partition will be mounted in the filesystem hierarchy.
 
 ## Example Playbook
 
 ```yaml
-- hosts: servers
+- hosts: server
   become: yes
   vars:
     partitions:

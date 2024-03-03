@@ -28,7 +28,7 @@ to value of `interface_name` variable and applying a new `Netplan` configuration
 
 The playbook consists of the following tasks:
 
-1. Rename the active network interface to "net0".
+1. Rename the active network interface to `net0`.
 2. Change the value after `set-name` in `/etc/netplan/01-netcfg.yaml` to `interface_name` value.
 3. Check the Netplan configuration for errors.
 4. Handle errors in the Netplan configuration.
