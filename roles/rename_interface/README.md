@@ -28,11 +28,14 @@ to value of `interface_name` variable and applying a new `Netplan` configuration
 
 The playbook consists of the following tasks:
 
-1. Rename the active network interface to `net0`.
-2. Change the value after `set-name` in `/etc/netplan/01-netcfg.yaml` to `interface_name` value.
-3. Check the Netplan configuration for errors.
-4. Handle errors in the Netplan configuration.
-5. Apply the new network configuration.
-6. Display information about the renamed interface.
+1. Validate if variable interface_name is a string and defined that utilizes the `assert` module to check the following conditions:
+   * Ensures that the `interface_name` variable is defined.
+   * Checks if the `interface_name` variable is a string data type.
+2. Rename the active network interface to `net0`.
+3. Change the value after `set-name` in `/etc/netplan/01-netcfg.yaml` to `interface_name` value.
+4. Check the Netplan configuration for errors.
+5. Handle errors in the Netplan configuration.
+6. Apply the new network configuration.
+7. Display information about the renamed interface.
 
 ## License

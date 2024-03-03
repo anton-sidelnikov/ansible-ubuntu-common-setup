@@ -28,9 +28,13 @@ using the `lscpu` command.
 
 The playbook consists of the following tasks:
 
-1. Install the `cpufrequtils` and `util-linux`packages and update the apt package cache.
-2. Check the available CPU governors.
-3. Set the CPU scaling governor to the specified value (default is `performance`) if supported.
-4. Display CPU information including `Hyper-Threading/Multithreading`.
+1. Validate governor variable that uses the `assert` module to check the following conditions:
+   * The variable is defined.
+   * The variable is a string.
+   * The variable's value is within the list of valid options which is `performance`, `powersave`, `userspace`, `ondemand`, `conservative` or `schedutil`.
+2. Install the `cpufrequtils` and `util-linux`packages and update the apt package cache.
+3. Check the available CPU governors.
+4. Set the CPU scaling governor to the specified value (default is `performance`) if supported.
+5. Display CPU information including `Hyper-Threading/Multithreading`.
 
 ## License

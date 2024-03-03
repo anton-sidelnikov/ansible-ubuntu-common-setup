@@ -1,4 +1,12 @@
 ---
+- name: Validate governor variable
+  assert:
+    that:
+      - governor is defined
+      - governor is string
+      - governor in ['performance', 'powersave', 'userspace', 'ondemand', 'conservative', 'schedutil']
+    fail_msg: "Variable 'governor' is not a string or not in the list of valid options"
+
 - name: Install cpufrequtils package and update apt package cache
   become: yes
   ansible.builtin.package:

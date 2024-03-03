@@ -1,4 +1,12 @@
 ---
+- name: Validate if variable cpu_idle_state is an integer and in range [0, 1]
+  assert:
+    that:
+      - cpu_idle_state is defined
+      - cpu_idle_state is number
+      - cpu_idle_state in [0, 1]
+    fail_msg: "Variable is not an integer or not in the range [0, 1]"
+
 - name: Install cpupower within linux-tools
   become: yes
   ansible.builtin.package:

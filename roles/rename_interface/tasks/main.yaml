@@ -1,4 +1,11 @@
 ---
+- name: Validate if variable interface_name is a string and defined
+  assert:
+    that:
+      - interface_name is defined
+      - interface_name is string
+    fail_msg: "Variable is not a string or not defined"
+
 - name: Check if {{ cloud_init_file }} exists
   ansible.builtin.stat:
     path: "{{ netplan_path }}/{{ cloud_init_file }}"
