@@ -24,20 +24,11 @@
 
 - name: Encrypt the partition using LUKS1 for smaller devices
   community.crypto.luks_device:
-    state: present
+    state: opened
     device: "{{ item.key }}"
     passphrase: "{{ item.value.luks_passphrase }}"
     name: "{{ item.value.luks_partition }}"
     type: luks1
-  when: "{{ device_size_mb | int < 16 }}"
-  register: encryption_result
-
-- name: Open the partition using LUKS1 for smaller devices
-  community.crypto.luks_device:
-    name: "{{ item.value.luks_partition }}"
-    state: opened
-    device: "{{ item.key }}"
-    passphrase: "{{ item.value.luks_passphrase }}"
   when: "{{ device_size_mb | int < 16 }}"
   register: encryption_result
 
