@@ -1,21 +1,54 @@
 ---
-- name: Encrypt partition
-  become: yes
-  ansible.builtin.script: "encrypt_partition.sh '{{ item.value.luks_passphrase }}' '{{ item.key }}' '{{ item.value.luks_partition }}'"
+- name: Get device size in bytes
+  ansible.builtin.shell: "blockdev --getsize64 {{ item.key }}"
+  register: device_size_bytes
+
+- name: Convert bytes to megabytes
+  ansible.builtin.set_fact:
+    device_size_mb: "{{ (device_size_bytes.stdout | int) / 1024 / 1024 }}"
+
+- name: Encrypt the partition using LUKS2 for bigger devices
+  community.crypto.luks_device:
+    name: "{{ item.value.luks_partition }}"
+    state: opened
+    cipher: aes
+    device: "{{ item.key }}"
+    passphrase: "{{ item.value.luks_passphrase }}"
+    type: luks2
+  when: "{{ device_size_mb | int > 16 }}"
   register: encryption_result
-  ignore_errors: yes
+
+- name: Format small device before encryption to avoid errors
+  ansible.builtin.command: mkfs.ext4 {{ item.key }}
+  when: "{{ device_size_mb | int < 16 }}"
+
+- name: Encrypt the partition using LUKS1 for smaller devices
+  community.crypto.luks_device:
+    state: present
+    device: "{{ item.key }}"
+    passphrase: "{{ item.value.luks_passphrase }}"
+    name: "{{ item.value.luks_partition }}"
+    type: luks1
+  when: "{{ device_size_mb | int < 16 }}"
+  register: encryption_result
+
+- name: Open the partition using LUKS1 for smaller devices
+  community.crypto.luks_device:
+    name: "{{ item.value.luks_partition }}"
+    state: opened
+    device: "{{ item.key }}"
+    passphrase: "{{ item.value.luks_passphrase }}"
+  when: "{{ device_size_mb | int < 16 }}"
+  register: encryption_result
 
 - name: Format
-  become: yes
   ansible.builtin.command: mkfs.ext4 /dev/mapper/{{ item.value.luks_partition }}
-  when: encryption_result is succeeded
+  when: encryption_result is succeeded and encryption_result.changed
 
 - name: Create mount folder
-  become: yes
   ansible.builtin.command: mkdir -p {{ item.value.mount_point }}
-  when: encryption_result is succeeded
+  when: encryption_result is succeeded and encryption_result.changed
 
 - name: Mount partition to mount point
-  become: yes
   ansible.builtin.command: mount /dev/mapper/{{ item.value.luks_partition }} {{ item.value.mount_point }}
-  when: encryption_result is succeeded
+  when: encryption_result is succeeded and encryption_result.changed

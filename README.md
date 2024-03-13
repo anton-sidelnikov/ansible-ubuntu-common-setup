@@ -22,6 +22,16 @@ This playbook is designed to be executed on all hosts (`all`) and aims to set up
 - `interface_name`: (Optional, String) The Active network interface name to be set. If not specified, the default name is `net0`.
 - `cpu_idle_state`: (Optional, Int) The CPU idle state to be set. If not specified, the default value is `1`.
 
+
+## Dependencies
+
+The role `encrypt_partition` depends on the `community.crypto` collection.
+To install the collection, you can use the following command:
+
+```bash
+ansible-galaxy install -r requirements.yaml
+```
+
 ## Example Usage
 To execute the playbook base.yaml with the specified inventory file using Ansible, you would run the following command in your terminal:
 

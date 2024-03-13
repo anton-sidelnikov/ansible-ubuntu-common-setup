@@ -5,6 +5,16 @@ This Ansible role automates the process of encrypting and mounting partitions us
 - Ansible installed on the control node.
 - Passwordless SSH access to the target hosts.
 
+## Dependencies
+
+This role depends on the `community.crypto` collection.
+
+To install the collection, you can use the following command:
+
+```sh
+ansible-galaxy collection install community.crypto
+```
+
 ## Role Variables
 
 - `partitions`: A dictionary specifying the partitions to be encrypted and mounted. Each key-value pair in the dictionary represents a partition.
