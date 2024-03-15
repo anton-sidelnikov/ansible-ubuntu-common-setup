@@ -15,12 +15,12 @@
     device: "{{ item.key }}"
     passphrase: "{{ item.value.luks_passphrase }}"
     type: luks2
-  when: "{{ device_size_mb | int > 16 }}"
-  register: encryption_result
+  when: device_size_mb | int > 16
+  register: bencryption_result
 
 - name: Format small device before encryption to avoid errors
   ansible.builtin.command: mkfs.ext4 {{ item.key }}
-  when: "{{ device_size_mb | int < 16 }}"
+  when: device_size_mb | int < 16
 
 - name: Encrypt the partition using LUKS1 for smaller devices
   community.crypto.luks_device:
@@ -29,17 +29,17 @@
     passphrase: "{{ item.value.luks_passphrase }}"
     name: "{{ item.value.luks_partition }}"
     type: luks1
-  when: "{{ device_size_mb | int < 16 }}"
-  register: encryption_result
+  when: device_size_mb | int < 16
+  register: sencryption_result
 
 - name: Format
   ansible.builtin.command: mkfs.ext4 /dev/mapper/{{ item.value.luks_partition }}
-  when: encryption_result is succeeded and encryption_result.changed
+  when: bencryption_result.changed or sencryption_result.changed
 
 - name: Create mount folder
   ansible.builtin.command: mkdir -p {{ item.value.mount_point }}
-  when: encryption_result is succeeded and encryption_result.changed
+  when: bencryption_result.changed or sencryption_result.changed
 
 - name: Mount partition to mount point
   ansible.builtin.command: mount /dev/mapper/{{ item.value.luks_partition }} {{ item.value.mount_point }}
-  when: encryption_result is succeeded and encryption_result.changed
+  when: bencryption_result.changed or sencryption_result.changed
